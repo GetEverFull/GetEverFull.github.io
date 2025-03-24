@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+      <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+          <script id="headtemplate" type="text/x-handlebars-template"><style>.fff { background-color: lch(from var(--color0) l c h / 1); } .ddd { background-color: lch(from var(--color1) l c h / 1); background-position: 0% 0%; background-repeat: repeat; background-attachment: scroll; background-image: none; background-size: auto; background-origin: padding-box; background-clip: border-box; }</style><style>:root { --color0: {{--color0}}; --color1: {{--color1}}; }</style></script>
+          <script id="bodytemplate" type="text/x-handlebars-template"><p class="fff">hello</p><p class="ddd">world</p></script>
+        </head>
+        <body>
+          <script>
+            const thead = document.getElementById("headtemplate").innerHTML;
+            const htemplate = Handlebars.compile(thead);
+            const tbody = document.getElementById("bodytemplate").innerHTML;
+            const btemplate = Handlebars.compile(tbody);
+
+            const data = window.location.search;
+            const params = new URLSearchParams(data);
+            let paramObject= {}
+            params.forEach((value, key) => {
+              paramObject[key] = value;
+            });
+            console.log(paramObject)
+            
+            const headHtml = htemplate(paramObject);
+            document.head.innerHTML = headHtml;
+            const bodyHtml = btemplate(paramObject);
+            document.body.innerHTML = bodyHtml;
+          </script>
+        </body>
+      </html>
