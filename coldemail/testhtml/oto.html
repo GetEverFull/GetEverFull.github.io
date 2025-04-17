@@ -1,0 +1,48 @@
+
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <script id="handlebars" src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+        <script id="headtemplate" type="text/x-handlebars-template">
+        <title>one time offer</title>
+        
+    <style>:root { }</style></script>
+        <script id="bodytemplate" type="text/x-handlebars-template">
+        <p>here's a one time offer</p>
+        <a href="blob:http://localhost:3000/dc994555-8643-4d35-9415-4477e7184e6f">not now</a>
+        <a href="blob:http://localhost:3000/dc994555-8643-4d35-9415-4477e7184e6f" onclick="console.log('hello world')">yes please</a>
+    
+</script>
+        <script id="scriptsdata" type="application/json">[]</script>
+      </head>
+      <body>
+        <script id='fillerscript'>
+          const htemplate = Handlebars.compile(document.getElementById("headtemplate").innerHTML);
+          const btemplate = Handlebars.compile(document.getElementById("bodytemplate").innerHTML);
+
+          const data = new URLSearchParams(window.location.search);
+          let paramObject = {};
+          data.forEach((value, key) => paramObject[key] = value);
+
+          document.head.insertAdjacentHTML("beforeend", htemplate(paramObject));
+          document.body.insertAdjacentHTML("beforeend", btemplate(paramObject));
+
+          // Inject scripts manually
+          const scriptsData = JSON.parse(document.getElementById("scriptsdata").innerHTML);
+          scriptsData.forEach(({ content, src, type }) => {
+            const script = document.createElement("script");
+            script.type = type;
+            if (src) {
+              script.src = src;
+              script.async = false; // Keep execution order
+            } else {
+              script.textContent = content;
+            }
+            document.head.appendChild(script);
+          });
+          for(const id of ["handlebars", "headtemplate", "bodytemplate", "scriptsdata", "fillerscript"]){
+            document.getElementById(id).remove();
+          }
+        </script>
+      </body>
+    </html>
