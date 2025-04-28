@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Connection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+            transform-origin: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <!-- Loading State -->
+        <div id="loadingSpinner" class="h-12 w-12 text-blue-500">
+            <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+        </div>
+
+        <h1 id="statusText" class="text-2xl font-bold mt-4">
+            Processing...
+        </h1>
+
+        <!-- Success Notification -->
+        <div id="successNotification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm bg-green-100 border border-green-400 text-green-700">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <div>
+                    <p class="font-bold">Stripe Connected!</p>
+                </div>
+                <button onclick="hideNotification('successNotification')" class="ml-4 text-gray-500 hover:text-gray-700">
+                    ×
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Notification -->
+        <div id="errorNotification" class="hidden fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm bg-red-100 border border-red-400 text-red-700">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                <div>
+                    <p class="font-bold">Connection Failed</p>
+                    <p id="errorMessage">There was an error. Please contact support.</p>
+                </div>
+                <button onclick="hideNotification('errorNotification')" class="ml-4 text-gray-500 hover:text-gray-700">
+                    ×
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = "https://rszdhljwuawhbvsrtwmm.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzemRobGp3dWF3aGJ2c3J0d21tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgxNzY4MDIsImV4cCI6MjA1Mzc1MjgwMn0.p3NBab3uJOupZrKXjbDGfHnx-Lhrqsvqs6j07fLPgmk";
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        async function handleSubmit() {
+            try {
+                const res = await fetch(
+                    //swap this for deployment
+                    //`https://rszdhljwuawhbvsrtwmm.supabase.co/functions/v1/stripe-oauth-callback${window.location.search}`,
+                    `http://127.0.0.1:54321/functions/v1/stripe-oauth-callback${window.location.search}`,
+                    {
+                        method: "POST",
+                    }
+                );
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message);
+                }
+
+                const { url } = await res.json();
+                showSuccess("Success!");
+            } catch (error) {
+                console.error(error);
+                showError(error.message || "An unknown error occurred");
+            }
+        }
+
+        function showSuccess(message) {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('statusText').textContent = message;
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successNotification').classList.remove('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('statusText').textContent = "Error occurred";
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorNotification').classList.remove('hidden');
+        }
+
+        function hideNotification(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Start the process when the page loads
+        document.addEventListener('DOMContentLoaded', handleSubmit);
+    </script>
+</body>
+</html>
